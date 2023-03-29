@@ -70,8 +70,8 @@ Expr OrHelper(const OrPtr& lhs, const Expr& rhs) {
 Expr operator&(const Expr& lhs, const Expr& rhs) {
   if (const auto e_ptr = std::get_if<Const>(&lhs)) {
     return (e_ptr->value) ? rhs : *e_ptr;
-  } else if (const AndPtr* e_ptr = std::get_if<AndPtr>(&lhs)) {
-    return AndHelper(*e_ptr, rhs);
+  } else if (const AndPtr* e_ptr2 = std::get_if<AndPtr>(&lhs)) {
+    return AndHelper(*e_ptr2, rhs);
   }
   return std::make_shared<And>(std::vector{lhs, rhs});
 }
@@ -79,8 +79,8 @@ Expr operator&(const Expr& lhs, const Expr& rhs) {
 Expr operator|(const Expr& lhs, const Expr& rhs) {
   if (const auto e_ptr = std::get_if<Const>(&lhs)) {
     return (!e_ptr->value) ? rhs : *e_ptr;
-  } else if (const OrPtr* e_ptr = std::get_if<OrPtr>(&lhs)) {
-    return OrHelper(*e_ptr, rhs);
+  } else if (const OrPtr* e_ptr2 = std::get_if<OrPtr>(&lhs)) {
+    return OrHelper(*e_ptr2, rhs);
   }
   return std::make_shared<Or>(std::vector{lhs, rhs});
 }

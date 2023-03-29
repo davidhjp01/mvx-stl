@@ -14,6 +14,7 @@
 #include <deque>
 
 #include <cassert>
+#include <iterator>
 
 namespace signal_tl {
 namespace semantics {
