@@ -1,7 +1,7 @@
 /**
  * This file will test the functionality of the Signal class
  */
-#include <catch2/catch.hpp>
+#include <catch2/catch_all.hpp>
 
 #include "signal_tl/signal.hh"
 
@@ -38,7 +38,7 @@ class MonotonicIncreasingTimestampedSignal
 Catch::Generators::GeneratorWrapper<Sample>
 mono_increase_sample(double interval_size = 10.0, double delta = 0.1) {
   return Catch::Generators::GeneratorWrapper<Sample>(
-      std::unique_ptr<Catch::Generators::IGenerator<Sample>>(
+      Catch::Detail::unique_ptr<Catch::Generators::IGenerator<Sample>>(
           new MonotonicIncreasingTimestampedSignal(interval_size, delta)));
 }
 
@@ -55,8 +55,8 @@ TEST_CASE("Signals are monotonically increasing", "[signal]") {
     auto sig      = std::make_shared<Signal>(points, time_pts);
 
     REQUIRE(sig->size() == 4);
-    REQUIRE(sig->begin_time() == Approx(0));
-    REQUIRE(sig->end_time() == Approx(6.25));
+    REQUIRE(sig->begin_time() == Catch::Approx(0));
+    REQUIRE(sig->end_time() == Catch::Approx(6.25));
 
     auto time_point = GENERATE(take(100, random(0.0, 6.25)));
     REQUIRE_THROWS(sig->push_back(time_point, 0.0));
