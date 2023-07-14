@@ -96,11 +96,11 @@ void init_ast_module(py::module& parent) {
 
   py::class_<ast::Eventually, ast::EventuallyPtr>(m, "Eventually")
       .def(
-          py::init<const Expr&, std::optional<ast::Interval>>(),
+          py::init<const Expr&, ast::Interval>(),
           "arg"_a,
-          "interval"_a = std::nullopt)
+          "interval"_a = ast::Interval{})
       .def_readonly("arg", &ast::Eventually::arg)
-      .def_readonly("interval", &ast::Eventually::arg)
+      .def_readonly("interval", &ast::Eventually::interval)
       .def("__and__", &and_op<ast::EventuallyPtr>)
       .def("__or__", &or_op<ast::EventuallyPtr>)
       .def("__invert__", &not_op<ast::EventuallyPtr>)
@@ -108,11 +108,11 @@ void init_ast_module(py::module& parent) {
 
   py::class_<ast::Always, ast::AlwaysPtr>(m, "Always")
       .def(
-          py::init<const Expr&, std::optional<ast::Interval>>(),
+          py::init<const Expr&, ast::Interval>(),
           "arg"_a,
-          "interval"_a = std::nullopt)
+          "interval"_a = ast::Interval{})
       .def_readonly("arg", &ast::Always::arg)
-      .def_readonly("interval", &ast::Always::arg)
+      .def_readonly("interval", &ast::Always::interval)
       .def("__and__", &and_op<ast::AlwaysPtr>)
       .def("__or__", &or_op<ast::AlwaysPtr>)
       .def("__invert__", &not_op<ast::AlwaysPtr>)
@@ -120,12 +120,12 @@ void init_ast_module(py::module& parent) {
 
   py::class_<ast::Until, ast::UntilPtr>(m, "Until")
       .def(
-          py::init<const Expr&, const Expr&, std::optional<ast::Interval>>(),
+          py::init<const Expr&, const Expr&, ast::Interval>(),
           "arg0"_a,
           "arg1"_a,
-          "interval"_a = std::nullopt)
+          "interval"_a = ast::Interval{})
       .def_readonly("args", &ast::Until::args)
-      .def_readonly("interval", &ast::Until::args)
+      .def_readonly("interval", &ast::Until::interval)
       .def("__and__", &and_op<ast::UntilPtr>)
       .def("__or__", &or_op<ast::UntilPtr>)
       .def("__invert__", &not_op<ast::UntilPtr>)

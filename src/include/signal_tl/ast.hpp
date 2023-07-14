@@ -12,6 +12,7 @@
 #include <utility>     // for move, make_pair, pair
 #include <variant>     // for get, get_if, visit, variant
 #include <vector>      // for vector
+#include <optional>
 
 namespace signal_tl {
 namespace ast {
@@ -255,12 +256,12 @@ Expr Or(std::vector<Expr> args);
 Expr Implies(const Expr& arg1, const Expr& arg2);
 Expr Xor(const Expr& arg1, const Expr& arg2);
 Expr Iff(const Expr& arg1, const Expr& arg2);
-Expr Always(Expr arg);
-Expr Always(Expr arg, ast::Interval interval);
-Expr Eventually(Expr arg);
-Expr Eventually(Expr arg, ast::Interval interval);
-Expr Until(Expr arg1, Expr arg2);
-Expr Until(Expr arg1, Expr arg2, ast::Interval interval);
+// Expr Always(Expr arg);
+Expr Always(Expr arg, std::optional<ast::Interval> interval = std::nullopt);
+// Expr Eventually(Expr arg);
+Expr Eventually(Expr arg, std::optional<ast::Interval> interval = std::nullopt);
+// Expr Until(Expr arg1, Expr arg2);
+Expr Until(Expr arg1, Expr arg2, std::optional<ast::Interval> interval = std::nullopt);
 
 } // namespace signal_tl
 

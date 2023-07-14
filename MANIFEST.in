@@ -12,4 +12,7 @@ graft tests
 graft include
 graft signal_tl
 graft src
+graft python_bindings
 
+prune .cache
+prune .github

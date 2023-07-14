@@ -58,7 +58,7 @@ if(BUILD_PARSER)
     FetchContent_Declare(
       pegtl
       GIT_REPOSITORY https://github.com/taocpp/PEGTL.git
-      GIT_TAG f34a1170afba0207a3c29ec08959591e3e7068c5
+      GIT_TAG 3.2.7
       GIT_PROGRESS ON
     )
 
@@ -84,7 +84,7 @@ if(BUILD_PYTHON_BINDINGS)
     FetchContent_Declare(
       pybind11
       GIT_REPOSITORY https://github.com/pybind/pybind11.git
-      GIT_TAG v2.6.1
+      GIT_TAG v2.10.4
       GIT_PROGRESS ON
     )
 
@@ -114,7 +114,7 @@ if(ENABLE_TESTING)
     FetchContent_Declare(
       catch2
       GIT_REPOSITORY https://github.com/catchorg/Catch2.git
-      GIT_TAG v2.13.4
+      GIT_TAG v3.4.0
       GIT_PROGRESS ON
     )
 

@@ -36,7 +36,7 @@ option(BUILD_EXAMPLES "Build the examples?" ${SIGNALTL_MASTER_PROJECT})
 
 # TODO: Turn this on once the library is stable.
 option(BUILD_PYTHON_BINDINGS "Build the Python extension?"
-  OFF
+  ON
 )
 
 option(ENABLE_CACHE "Enable cache if available" ${SIGNALTL_MASTER_PROJECT})
