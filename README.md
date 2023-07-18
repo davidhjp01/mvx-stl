@@ -1,6 +1,8 @@
-[![pypi](https://badge.fury.io/py/signal-temporal-logic.svg)](https://badge.fury.io/py/signal-temporal-logic)
+[![pypi](https://badge.fury.io/py/pystlogic.svg)](https://badge.fury.io/py/pystlogic)
 
-# Signal Temporal Logic Monitoring
+# pystlogic
+
+#### This package is a forked version of anand-bala's [signal-temporal-logic](https://github.com/anand-bala/signal-temporal-logic).
 
 This package provides an interface to define offline monitoring for Signal Temporal
 Logic (STL) specifications. The library is written in C++ (and can be used with [CMake])

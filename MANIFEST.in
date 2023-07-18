@@ -13,3 +13,5 @@ graft third_party
 graft signal_tl
 graft src
 
+prune .cache
+prune .github

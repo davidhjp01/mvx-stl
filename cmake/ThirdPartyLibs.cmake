@@ -19,14 +19,16 @@ function(git_submodule)
   endif()
 
   message(VERBOSE "Trying to update submodule in ${GitSubmodule_PATH}")
-  execute_process(
-    COMMAND ${GIT_EXECUTABLE} submodule update --init -- ${GitSubmodule_PATH}
-    WORKING_DIRECTORY ${GitSubmodule_WORKING_DIRECTORY}
-    RESULT_VARIABLE GIT_SUBMOD_RESULT)
-  if(NOT GIT_SUBMOD_RESULT EQUAL "0")
-    message(
-      FATAL_ERROR
-        "git submodule update --init failed with ${GIT_SUBMOD_RESULT}, please checkout submodules"
-    )
+  if (NOT EXISTS "${CMAKE_CURRENT_LIST_DIR}/${GitSubmodule_PATH}/CMakeLists.txt")
+    execute_process(
+            COMMAND ${GIT_EXECUTABLE} submodule update --init -- ${GitSubmodule_PATH}
+            WORKING_DIRECTORY ${GitSubmodule_WORKING_DIRECTORY}
+            RESULT_VARIABLE GIT_SUBMOD_RESULT)
+    if(NOT GIT_SUBMOD_RESULT EQUAL "0")
+      message(
+              FATAL_ERROR
+              "git submodule update --init failed with ${GIT_SUBMOD_RESULT}, please checkout submodules"
+      )
+  endif ()
   endif()
 endfunction()

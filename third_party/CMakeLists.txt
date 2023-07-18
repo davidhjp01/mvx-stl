@@ -17,11 +17,7 @@ endif()
 
 # Python Bindings
 if(SIGNALTL_PYTHON_BINDINGS)
-  if(MSVC)
-    set(PYBIND11_CPP_STANDARD /std:c++17)
-  else()
-    set(PYBIND11_CPP_STANDARD -std=c++17)
-  endif()
+  set(CMAKE_CXX_STANDARD 17)
   find_package(pybind11 QUIET)
   if(pybind11_FOUND)
     message(STATUS "System installation of pybind11 found")

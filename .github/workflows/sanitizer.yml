@@ -1,0 +1,57 @@
+name: Sanitizer
+
+on: [push, pull_request]
+
+env:
+  SCCACHE_DIR: ${{ github.workspace }}/.cache/sccache
+
+jobs:
+  sanitizer:
+    strategy:
+      fail-fast: false
+      matrix:
+        cxx: [g++, clang++]
+        sanitizer: [address, undefined]
+
+    runs-on: ubuntu-20.04
+
+    env:
+      CXX: ${{ matrix.cxx }}
+
+    steps:
+    - uses: actions/checkout@v2
+    - uses: actions/setup-python@v2
+      with:
+        python-version: '3.x'
+    - name: Cache dependencies
+      uses: actions/cache@v2
+      env:
+        cache-name: cache-deps
+      with:
+        path: .cache/deps
+        key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/ThirdPartyDeps.cmake') }}
+        restore-keys: |
+          ${{ runner.os }}-build-${{ env.cache-name }}-
+          ${{ runner.os }}-build-
+          ${{ runner.os }}-
+    - name: Cache build
+      uses: actions/cache@v2
+      env:
+        cache-name: cache-build
+      with:
+        path: .cache/sccache
+        key: ${{ runner.os }}-build-${{ env.cache-name }}
+    - name: Install sccache
+      run: |
+        curl -SL https://github.com/mozilla/sccache/releases/download/v0.2.15/sccache-v0.2.15-x86_64-unknown-linux-musl.tar.gz | tar xvz --strip-components=1 --wildcards "*/sccache"
+        chmod +x sccache
+    - run: cmake -E make_directory build
+
+    - working-directory: build/
+      run: cmake $GITHUB_WORKSPACE -DBUILD_EXAMPLES=OFF -DCMAKE_CXX_FLAGS="-fsanitize=${{ matrix.sanitizer }}"
+
+    - working-directory: build/
+      run: cmake --build .
+
+    - working-directory: build/
+      run: ctest --output-on-failure

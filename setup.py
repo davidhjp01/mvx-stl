@@ -7,8 +7,9 @@ import subprocess
 import sys
 from distutils.version import LooseVersion
 
-from setuptools import Extension, setup
+from setuptools import Extension, setup, find_packages
 from setuptools.command.build_ext import build_ext
+from setuptools.command.sdist import sdist
 
 
 class CMakeExtension(Extension):
@@ -94,7 +95,15 @@ class CMakeBuild(build_ext):
         )
 
 
+class SdistBuild(sdist):
+    def run(self) -> None:
+        print("Git submodule update..")
+        subprocess.check_call(["git", "submodule", "update", "--init"])
+        super().run()
+
+
 setup(
     ext_modules=[CMakeExtension("signal_tl._cext")],
-    cmdclass=dict(build_ext=CMakeBuild),
+    packages=find_packages(),
+    cmdclass=dict(build_ext=CMakeBuild, sdist=SdistBuild)
 )

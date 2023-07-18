@@ -1,0 +1,189 @@
+name: Build
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      publish_artifacts:
+        description: 'Publish artifacts'
+        required: true
+        default: false
+
+env:
+  SCCACHE_DIR: ${{ github.workspace }}/.cache/sccache
+
+jobs:
+  mac-os:
+    strategy:
+      fail-fast: false
+      matrix:
+        xcode: ['13', '14']
+        build_type: [Debug, Release]
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Cache dependencies
+        uses: actions/cache@v3
+        env:
+          cache-name: cache-deps
+        with:
+          path: .cache/deps
+          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/ThirdPartyDeps.cmake') }}
+          restore-keys: |
+            ${{ runner.os }}-build-${{ env.cache-name }}-
+            ${{ runner.os }}-build-
+            ${{ runner.os }}-
+      - name: Cache build
+        uses: actions/cache@v3
+        env:
+          cache-name: cache-build
+        with:
+          path: .cache/sccache
+          key: ${{ runner.os }}-build-${{ env.cache-name }}
+      - uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: ${{ matrix.xcode }}
+      - name: Install sccache
+        run: brew install sccache
+      - name: CMake configure
+        run: cmake -B build
+
+      - working-directory: build/
+        run: cmake --build . --config ${{ matrix.build_type }}
+
+      - working-directory: build/
+        run: ctest --config ${{ matrix.build_type }} --output-on-failure
+
+  linux:
+    strategy:
+      fail-fast: false
+      matrix:
+        compiler:
+          - g++-9
+          - g++-10
+          - clang++-10
+          - clang++-11
+        build_type: [ Debug, Release ]
+    runs-on: ubuntu-20.04
+    env:
+      CXX: ${{ matrix.compiler }}
+    steps:
+      - uses: actions/checkout@v3
+      - name: Cache dependencies
+        uses: actions/cache@v3
+        env:
+          cache-name: cache-deps
+        with:
+          path: .cache/deps
+          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/ThirdPartyDeps.cmake') }}
+          restore-keys: |
+            ${{ runner.os }}-build-${{ env.cache-name }}-
+            ${{ runner.os }}-build-
+            ${{ runner.os }}-
+      - name: Cache build
+        uses: actions/cache@v3
+        env:
+          cache-name: cache-build
+        with:
+          path: .cache/sccache
+          key: ${{ runner.os }}-build-${{ env.cache-name }}
+      - name: Install sccache
+        run: |
+          curl -SL https://github.com/mozilla/sccache/releases/download/v0.2.15/sccache-v0.2.15-x86_64-unknown-linux-musl.tar.gz | tar xvz --strip-components=1 --wildcards "*/sccache"
+          chmod +x sccache
+      - run: cmake -E make_directory build
+      - working-directory: build/
+        run: cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
+      - working-directory: build/
+        run: cmake --build .
+      - working-directory: build/
+        run: ctest --output-on-failure
+
+  windows:
+    strategy:
+      fail-fast: false
+      matrix:
+        build_type: [Debug, Release]
+    runs-on: windows-2019
+    env:
+      CXX: ${{ matrix.compiler }}
+    steps:
+      - uses: actions/checkout@v3
+      - name: Cache dependencies
+        uses: actions/cache@v3
+        env:
+          cache-name: cache-deps
+        with:
+          path: .cache/deps
+          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/ThirdPartyDeps.cmake') }}
+          restore-keys: |
+            ${{ runner.os }}-build-${{ env.cache-name }}-
+            ${{ runner.os }}-build-
+            ${{ runner.os }}-
+      - name: Cache build
+        uses: actions/cache@v3
+        env:
+          cache-name: cache-build
+        with:
+          path: .cache/sccache
+          key: ${{ runner.os }}-build-${{ env.cache-name }}
+      - name: Install sccache
+        run: choco install sccache
+      - run: cmake -E make_directory build
+      - shell: bash
+        working-directory: build/
+        run: cmake $GITHUB_WORKSPACE
+      - working-directory: build/
+        run: cmake --build . --config ${{ matrix.build_type }}
+      - working-directory: build/
+        run: ctest -C ${{ matrix.build_type }} --output-on-failure
+
+  wheels:
+    needs: [mac-os, linux, windows]
+    strategy:
+      fail-fast: false
+      matrix:
+        platform: [ 'windows-2019', 'ubuntu-latest', 'macos-latest' ]
+        python-version: [ '38', '39', '310', '311' ]
+    runs-on: ${{ matrix.platform }}
+    env:
+      CIBW_BUILD: "cp${{ matrix.python-version }}-manylinux_x86_64 cp${{ matrix.python-version }}-macosx_x86_64 cp${{ matrix.python-version }}-win_amd64"
+      CIBW_MANYLINUX_X86_64_IMAGE: manylinux2014
+      CIBW_DEPENDENCY_VERSIONS: latest
+      CIBW_BUILD_VERBOSITY: 3
+      MACOSX_DEPLOYMENT_TARGET: '10.14'
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v4
+        with:
+          cache: 'pip'
+          python-version: '3.11'
+      - name: Install dependencies
+        run: pip install build twine cibuildwheel==2.14.1
+      - name: Build wheels
+        run: python -m cibuildwheel --output-dir ./dist
+      - name: Run twine check
+        run: twine check --strict dist/*
+      - uses: actions/upload-artifact@v3
+        if: github.event_name == 'push' && startsWith(github.event.ref, 'refs/tags/v') || github.event.inputs.publish_artifacts == 'true'
+        name: Upload artifact (wheels)
+        with:
+          name: wheels
+          path: ./dist/*.whl
+
+  publish:
+    if: github.event_name == 'push' && startsWith(github.event.ref, 'refs/tags/v')
+    needs: [wheels]
+    runs-on: ubuntu-latest
+    environment: pypi
+    steps:
+      - uses: actions/download-artifact@v3
+        with:
+          name: wheels
+          path: ./dist/
+      - uses: pypa/gh-action-pypi-publish@v1.5.2
+        with:
+          user: __token__
+          password: ${{ secrets.PYPI_API_TOKEN }}
+

@@ -20,6 +20,7 @@ include(CMakePrintHelpers)
 include(GNUInstallDirs)
 include(CMakePackageConfigHelpers)
 include(CTest)
+include(StaticAnalyzers)
 
 # Options
 option(SIGNALTL_TEST "Build signaltl test suite?" ${SIGNALTL_MASTER_PROJECT})
@@ -29,6 +30,7 @@ option(SIGNALTL_EXAMPLES "Build the examples?" ${SIGNALTL_MASTER_PROJECT})
 option(SIGNALTL_INSTALL "Install the library and header files?"
        ${SIGNALTL_MASTER_PROJECT})
 option(SIGNALTL_PYTHON_BINDINGS "Build the Python extension?" ON)
+option(ENABLE_STATIC_ANALYSIS "Enable clang-tidy and include-what-you-use" OFF)
 
 set(_SIGNALTL_BUILD_THE_TESTS
     OFF
@@ -64,6 +66,9 @@ target_compile_features(signaltl PUBLIC cxx_std_17)
 target_link_libraries(signaltl PRIVATE mono_wedge::mono_wedge)
 target_link_libraries(signaltl PUBLIC fmt::fmt)
 set_target_properties(signaltl PROPERTIES POSITION_INDEPENDENT_CODE ON)
+enable_clang_tidy(signaltl)
+enable_include_what_you_use(signaltl)
+
 if(MSVC)
   target_compile_options(signaltl PRIVATE /W4 /WX /utf-8)
 else()
