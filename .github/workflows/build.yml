@@ -140,7 +140,6 @@ jobs:
         run: ctest -C ${{ matrix.build_type }} --output-on-failure
 
   wheels:
-    needs: [mac-os, linux, windows]
     strategy:
       fail-fast: false
       matrix:
@@ -174,7 +173,7 @@ jobs:
 
   publish:
     if: github.event_name == 'push' && startsWith(github.event.ref, 'refs/tags/v')
-    needs: [wheels]
+    needs: [wheels, mac-os, linux, windows]
     runs-on: ubuntu-latest
     environment: pypi
     steps:
