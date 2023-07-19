@@ -57,7 +57,7 @@ ways:
 ## Using `pip`
 
 ```shell
-$ python3 -m pip install signal-temporal-logic
+$ python3 -m pip install pystlogic
 ```
 
 ## Build from source
@@ -66,7 +66,7 @@ $ python3 -m pip install signal-temporal-logic
 
 First clone the repository:
 ```shell
-$ git clone https://github.com/anand-bala/signal-temporal-logic
+$ git clone https://github.com/davidhjp01/pystlogic
 ```
 
 Then install using `pip`, install the package:
